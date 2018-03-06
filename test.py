@@ -37,5 +37,7 @@ print('d[\'Tracy\'] =', d['Tracy'])
 print('d.get(\'Thomas\', -1) =', d.get('Thomas', -1))
 
 str = 'abc'
-for x in str:
-    print(x)
+for i in range(6):
+    print(i+'222')
+    for x in str:
+        print(x)
