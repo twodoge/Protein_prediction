@@ -38,6 +38,6 @@ print('d.get(\'Thomas\', -1) =', d.get('Thomas', -1))
 
 str = 'abc'
 for i in range(6):
-    print(i+'222')
+    # print(i+'222')
     for x in str:
         print(x)
