@@ -74,5 +74,53 @@ def sample_1():# 例子1，拟合y_data的函数，权重和偏置分别趋近0.
                 if step%20 == 0:
                     print (step, sess.run(weights), sess.run(biases))
 
+#添加神经层的函数，参数（输入值、输入的形状、输出的形状、激励函数）
+def add_layer(inputs, in_size, out_size, activation_function = None):
+    #tf.random_normal()参数为shape，还可以指定均值和标准差
+    weights = tf.Variable(tf.random_normal([in_size, out_size]))
+    biases = tf.Variable(tf.zeros([1, out_size]) + 0.1)
+    Wx_plus_b = tf.matmul(inputs, weights) + biases
+
+    if activation_function is None:
+        outputs = Wx_plus_b
+    else:
+        outputs = activation_function(Wx_plus_b)
+    return outputs
+
+def sample_2():#构建一个神经网络
+    #构建数据集
+    #np.linspace()在-1和1之间等差生成300个数字
+    #noise是正态分布的噪音，前两个参数是正态分布的参数，然后是size,newaxis:np.newaxis的功能是插入新维度
+    x_data = np.linspace(-1, 1 , 300, dtype=np.float32)[: , np.newaxis]
+    noise = np.random.normal(0, 0.05, x_data.shape).astype(np.float32)
+    y_data = np.square(x_data) - 0.5 +noise
+
+    #利用占位符定义我们所需的神经网络输入。
+    #第二个参数为shape，：None代表行数不定，1是列数。
+    #这里的行数就是样本数，列数就是每个样本的特征数。
+    xs = tf.placeholder(tf.float32, [None, 1])
+    ys = tf.placeholder(tf.float32, [None, 1])
+
+    #输入层1个神经元（因为只有一个特征），隐藏层是10个，输出层是1个。
+    #调用函数定义隐藏层和输出层，输入size是上一层的神经元个数（全连接），输出size是本层个数。
+    l1 = add_layer(xs, 1, 10, activation_function = tf.nn.relu)
+    prediction = add_layer(l1, 10, 1, activation_function = None)
+
+    #计算预测值predition和真实值的误差， 对二者差的平方求和再取平均作为损失函数
+    #reduction_indeics表示最后数据的压缩维度，好像一般不用这个参数（即降到0维，一个标量）
+    loss = tf.reduce_mean(tf.reduce_sum(tf.square(ys - prediction), reduction_indices=[1]))
+    train_step = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
+
+    #初始化变量、激活、执行运算
+    init = tf.global_variables_initializer()
+    with tf.Session() as sess:
+        sess.run(init)
+        for i in range(1000):
+            #training
+            sess.run(train_step, feed_dict={xs:x_data, ys:y_data})
+            if i % 50 == 0:
+                print (sess.run(loss, feed_dict={xs:x_data,ys:y_data}))
+
+
 if __name__ == "__main__":#主函数
-    sample_1()
+    sample_2()
