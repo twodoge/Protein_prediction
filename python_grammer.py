@@ -121,6 +121,23 @@ def sample_2():#构建一个神经网络
             if i % 50 == 0:
                 print (sess.run(loss, feed_dict={xs:x_data,ys:y_data}))
 
+def about_tensor():
+    '''
+    规模最小的张量是0阶张量，即标量，也就是一个数。
+
+    当我们把一些数有序的排列起来，就形成了1阶张量，也就是一个向量
+
+    如果我们继续把一组向量有序的排列起来，就形成了2阶张量，也就是一个矩阵
+
+    把矩阵摞起来，就是3阶张量，我们可以称为一个立方体，具有3个颜色通道的彩色图片就是一个这样的立方体
+    '''
+    #沿着某轴是什么意思
+    a = np.array([[1,2], [3,4]])
+    sum0 = np.sum(a, axis=0)
+    sum1 = np.sum(a, axis=1)
+
+    print(sum0)
+    print(sum1)
 
 if __name__ == "__main__":#主函数
-    sample_2()
+    about_tensor()
