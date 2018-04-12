@@ -7,10 +7,12 @@ from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv1D, Conv2D, GlobalAveragePooling1D, MaxPooling1D, MaxPool2D
 from keras.optimizers import SGD
 
+from keras.models import load_model
+
 import data_Processing
 
 FILE_NAME = 'cullpdb+profile_6133.npy.gz'
-NUM_TEST_SET = 3000000
+NUM_TEST_SET = 5200
 
 def cnn_prediction1():
     #Generate train data and test data
@@ -45,17 +47,23 @@ def base_on_mlp():
     from keras.optimizers import SGD
 
     # Generate dummy data
+    '''
+    (5200, 700, 44)
+    (5200, 700, 9)
+    (933, 700, 44)
+    (933, 700, 9)
+    '''
     x_train, y_train, x_test, y_test = data_Processing.get_data(FILE_NAME, NUM_TEST_SET)
-    x_train = x_train.reshape(1, 3000000, 44)
-    y_train = y_train.reshape(1, 3000000, 9)
-    x_test = x_test.reshape(1, 1293100, 44)
-    y_test = y_test.reshape(1, 1293100, 9)
+    x_train = x_train.reshape(5200, 700, 44)
+    y_train = y_train.reshape(5200, 700, 9)
+    x_test = x_test.reshape(933, 700, 44)
+    y_test = y_test.reshape(933, 700, 9)
 
     model = Sequential()
     # Dense(64) is a fully-connected layer with 64 hidden units.
     # in the first layer, you must specify the expected input data shape:
     # here, 20-dimensional vectors.
-    model.add(Dense(64, activation='relu', input_shape=(3000000, 44)))
+    model.add(Dense(64, activation='relu', input_shape=(700, 44)))
     model.add(Dropout(0.5))
     model.add(Dense(64, activation='relu'))
     model.add(Dropout(0.5))
@@ -68,8 +76,14 @@ def base_on_mlp():
 
     model.fit(x_train, y_train,
               epochs=20,
-              batch_size=128)
-    score = model.evaluate(x_test, y_test, batch_size=128)
+              batch_size=64)
+    score = model.evaluate(x_test, y_test, batch_size=64)
+
+    print(score)
+
+    #Save model
+    model.save('base_on_mlp_model.h5')
+    model.save_weights('base_on_mlp_model_weights.h5')
 
 if __name__ == "__main__":
     base_on_mlp()

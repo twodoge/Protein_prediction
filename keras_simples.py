@@ -96,5 +96,27 @@ def VGG_CNN():
     score = model.evaluate(x_test, y_test, batch_size=32)
     print(score)
 
+def self_data():
+    from keras.models import Sequential
+    from keras.layers import Dense, Activation
+    from keras.optimizers import Adam
+    import numpy as np
+
+    model = Sequential()
+    model.add(Dense(32, input_shape=(5, 3)))
+    model.add(Activation('relu'))
+    model.add(Dense(32))
+    model.add(Activation('relu'))
+    model.add(Dense(4))
+
+    adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    model.compile(loss='mean_squared_error', optimizer=adam)
+
+    x = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12], [13, 14, 15]])
+    x = x.reshape(1, 5, 3)
+
+    y = model.predict(x)
+    print(y)
+
 if __name__ == "__main__":
-    VGG_CNN()
+    self_data()
