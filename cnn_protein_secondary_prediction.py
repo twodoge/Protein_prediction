@@ -180,7 +180,8 @@ def mlp():
 
 def acc_8(y_true, y_pred):
     correct = 0
-    total, count = np.size(y_true, axis=0)
+    count = np.size(y_true, axis=0)
+    total = count
     print(np.shape(y_true),np.shape(y_pred))
     print("total:",total, 'll:', np.size(y_pred, axis=1))
     print(y_pred[0:10, 0:9])
@@ -277,13 +278,13 @@ def cnn2d():
     # print(score)
     model.summary()
 
-    #评估自己的模型，即删除Noseq
-    prediction = model.predict(x_test, batch_size=64, verbose=1)
-    print("acc_8:",acc_8(y_test, prediction))
-
     #保存模型
     model.save_weights("cnn2d_weights.h5")
     model.save("cnn2d_model.h5")
+
+    #评估自己的模型，即删除Noseq
+    prediction = model.predict(x_test, batch_size=64, verbose=1)
+    print("acc_8:",acc_8(y_test, prediction))
 
     #画出模型结构图，并保存成图片
     from keras.utils import plot_model
