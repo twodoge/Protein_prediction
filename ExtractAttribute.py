@@ -106,7 +106,3 @@ if __name__ == "__main__":#主函数
     # mkpath = 'D:\\bishe\\attribution\\seq' + seq
     path = mkdir(mkpath)
     read_amino_acid_seq(fileDir)
-import random
-names = ['twodog','军狗','吉娃娃','黄萍','鱼翅','大娃']
-print(names[random.randint(0,5)])
-print(names[random.randint(0,5)])

@@ -4,54 +4,88 @@ import numpy as np
 import random
 
 FILE_NAME = 'cullpdb+profile_6133.npy.gz'
-NUM_TEST_SET = 5200
+TRAIN_SET = 5600
+TEST_SET = 5605
+VALID_SET = 5877
 
-def get_data(file_name, num_test_Set):#读取数据
+def get_cnn_data(file_name,train_set, test_set, valid_set):#读取数据
     print('reading data from'+file_name+'...')
     input_datas = np.load(file_name)
 
+    np.set_printoptions(threshold=1000000)
     # 6133个samples，每个sample有700个氨基酸
-    input_datas.shape = (6133, 700, 57)
+    input_datas.shape = (-1, 700, 57)
+    # with open("C:\\bishe\data\dssp\data", 'a', encoding='gb18030') as f:
+    #     f.write(str(input_datas[0:2, 0:700, :]))
 
-    # input_datas.shape = (4293100, 57)
-    # print("inputs")
-    # print(input_datas[0:5,:5])
-    #seqs 氨基酸序列的独热编码
-    seqs = input_datas[:, :, :22].astype(np.float32)
+    train_data = input_datas[ : 5600].astype(np.float32)#[0,5600）训练
+    test_data = input_datas[5605 : 5877].astype(np.float32)#[5605,5877）=272
+    valid_data = input_datas[5877 : 6133].astype(np.float32)#[5877,6133]验证 = 256
 
-    #labels 的独热编码
-    labels = input_datas[:, :, 22:31].astype(np.float32)
+    # print("初始数据：")
+    # print(valid_data[0, 8, 0:57])
+    #训练数据. 20：氨基酸的独热编码，21：feature
+    x_train = np.zeros((5600*(700-16), 17, 43))
+    seq = np.zeros((17, 22))
+    feature = np.zeros((17, 21))
+    y_train = np.zeros((5600*(700-16), 9))
+    flag = 0
+    for i in range(5600):
+        for j in range(700-16):
+            for k in range(17):
+                seq[k, ] = train_data[i, j+k, :22]
+                feature[k, ] =train_data[i, j+k, 35:56]
+                if k==8:
+                    y_train[flag, ] = train_data[i, j + k, 22:31]
+            x_train[flag, ] = np.concatenate((seq, feature),axis=1)
+            flag = flag + 1
 
-    #features 氨基酸对应的属性(非独热编码)
-    features = input_datas[:, :, 35:].astype(np.float32)
+    #测试数据
+    x_test = np.zeros((272 * (700 - 16), 17, 43))
+    seq = np.zeros((17, 22))
+    feature = np.zeros((17, 21))
+    y_test = np.zeros((272 * (700 - 16), 9))
+    flag = 0
+    for i in range(272):
+        for j in range(700 - 16):
+            for k in range(17):
+                seq[k,] = test_data[i, j + k, :22]
+                feature[k,] = test_data[i, j + k, 35:56]
+                if k == 8:
+                    y_test[flag,] = test_data[i, j + k, 22:31]
+            x_test[flag,] = np.concatenate((seq, feature), axis=1)
+            flag = flag + 1
 
-    # print('seq:')
-    # print(seqs[1:2,0:10,:])
-    # print('labels:')
-    # print(labels[1:2, :10, :])
-    # print('fetures:')
-    # print(features[1:2, 0:2, :])
+    #验证数据
+    x_valid = np.zeros((256 * (700 - 16), 17, 43))
+    seq = np.zeros((17, 22))
+    feature = np.zeros((17, 21))
+    y_valid = np.zeros((256 * (700 - 16), 9))
+    flag = 0
+    for i in range(256):
+        for j in range(700 - 16):
+            for k in range(17):
+                seq[k,] = valid_data[i, j + k, :22]
+                feature[k,] = valid_data[i, j + k, 35:56]
+                if k == 8:
+                    y_valid[flag,] = valid_data[i, j + k, 22:31]
+            x_valid[flag,] = np.concatenate((seq, feature), axis=1)
+            flag = flag + 1
 
-    #将seq与features合并
-    seqs = np.concatenate((seqs, features), axis=2)
-    # print(np.shape(x_train))
-    # print("x_data:")
-    # print(x_train[1:2, :5, 20:24])
-
-    #根据num_test_set将数据集分为训练集和测试集
-    train_seqs = seqs[:num_test_Set]
-    train_labels = labels[:num_test_Set]
-    # train_features = features[:num_test_Set]
-    test_seqs = seqs[num_test_Set:]
-    test_labels = labels[num_test_Set:]
-    # test_features = features[num_test_Set:]
-
+    print("x_train, y_train, x_test, y_test, x_vail, y_vail data shape:")
+    print(np.shape(x_train))
+    print(np.shape(y_train))
+    print(np.shape(x_test))
+    print(np.shape(y_test))
+    print(np.shape(x_valid))
+    print(np.shape(y_valid))
     print('Data processing completed')
-    print(np.shape(train_seqs))
-    print(np.shape(train_labels))
-    print(np.shape(test_seqs))
-    print(np.shape(test_labels))
+    #
+    # print(x_valid[0, 8, 0:43])
+    # print(y_valid[0, 0:9])
 
-    return train_seqs, train_labels, test_seqs, test_labels
 
-# get_data(FILE_NAME, NUM_TEST_SET)
+    return x_train, y_train, x_test, y_test, x_valid, y_valid
+
+# get_data(FILE_NAME, TRAIN_SET, TEST_SET, VALID_SET)
+# get_cnn_data(FILE_NAME, TRAIN_SET, TEST_SET, VALID_SET)
