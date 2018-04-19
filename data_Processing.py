@@ -37,7 +37,7 @@ def get_cnn_data(file_name,train_set, test_set, valid_set):#读取数据
                 feature[k, ] =train_data[i, j+k, 35:56]
                 if k==8:
                     y_train[flag, ] = train_data[i, j + k, 22:31]
-            x_train[flag, ] = np.concatenate((seq, feature),axis=1)
+            x_train[flag, ] = np.concatenate((seq, feature), axis=1)
             flag = flag + 1
 
     #测试数据
