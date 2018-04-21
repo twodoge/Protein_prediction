@@ -8,6 +8,14 @@ TRAIN_SET = 5600
 TEST_SET = 5605
 VALID_SET = 5877
 
+'''
+57个功能是：
+“[0,22]：氨基酸残基，顺序为'A'，'C'，'E'，'D'，'G'，'F'，'I'，'H'，'K' ，'M'，'L'，'N'，'Q'，'P'，'S'，'R'，'T'，'W'，'V'，'Y'，'X'，' NoSeq'”
+“[22,31]：二级结构标签，具有'L'，'B'，'E'，'G'，'I'，'H'，'S'，'T'，'NoSeq' “
+“[31,33]：N-和C-终端;”
+“[33,35]：相对和绝对溶剂可及性，仅用于训练（绝对可达性定为15;相对可及性通过蛋白质中最大的可达性值归一化，阈值为0.15;原始溶剂可及性由DSSP计算）”
+“[35,57]：sequence profile。注意氨基酸残基的顺序是ACDEFGHIKLMNPQRSTVWXY，它与氨基酸残基”
+'''
 def get_cnn_data(file_name,train_set, test_set, valid_set):#读取数据
     print('reading data from'+file_name+'...')
     input_datas = np.load(file_name)

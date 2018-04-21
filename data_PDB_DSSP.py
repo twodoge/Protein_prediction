@@ -4,6 +4,7 @@ import sqlite3 as sql
 
 FILENAME = 'C:\\bishe\data\\available\cullpdb_pc20_res2.0_R0.25_d180322_chains6626.fasta'
 
+#创建数据库，存储蛋白质的氨基酸序列的二姐结构和属性
 def create_protein_database():
     conn = sql.connect('protein_database.db')
     c = conn.cursor()
@@ -27,6 +28,7 @@ def create_protein_database():
     conn.close()
     print ("create table successful")
 
+#将序列的信息写入PDB_DSSP表格
 def write_in_PDB_DSSP_table(data, c):
     # conn = sql.connect('protein_database.db')
     # c = conn.cursor()
@@ -37,6 +39,7 @@ def write_in_PDB_DSSP_table(data, c):
     # conn.close()
     print('DSSP store finish!')
 
+#将PDBID写入PDB_id表
 def write_in_PDBid_table(seq):
     conn = sql.connect('protein_database.db')
     c = conn.cursor()
@@ -62,18 +65,20 @@ def get_PDB_id_fasta(filename):
 def select_PDBid():
     conn = sql.connect('protein_database.db')
     c = conn.cursor()
-    cursor = c.execute('SELECT * FROM PDB_DSSP')
+    cursor = c.execute('SELECT * FROM PDB_id')
     for row in cursor:
         print(row)
     conn.commit()
     conn.close()
 
 def delete_PDBid():
+    seq = '4V4M'
     conn = sql.connect('protein_database.db')
     c = conn.cursor()
-    cursor = c.execute('DELETE FROM PDB_DSSP')
-    for row in cursor:
-        print(row)
+    cursor = c.execute("DELETE FROM PDB_DSSP WHERE PDB_id = '%s'"% seq)
+    # for row in cursor:
+    #     print(row)
+    print('succu')
     conn.commit()
     conn.close()
 

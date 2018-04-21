@@ -17,7 +17,7 @@ import data_PDB_DSSP
 import sqlite3 as sql
 
 
-def pdb_to_hssp(PDB_id, rest_url):
+def pdb_to_hssp(PDB_id, rest_url, num_retries = 30):
     # Read the pdb file data into a variable
     # files = {'file_': open(pdb_file_path, 'rb')}
 
@@ -27,11 +27,19 @@ def pdb_to_hssp(PDB_id, rest_url):
     # returned.
 
     url_create = '{}api/create/pdb_id/dssp/'.format(rest_url)
-    r = requests.post(url_create, data ={'data': PDB_id})
-    r.raise_for_status()
+    try:
+        r = requests.post(url_create, data ={'data': PDB_id})
+        r.raise_for_status()
 
-    job_id = json.loads(r.text)['id']
-    print ("Job submitted successfully. Id is: '{}'".format(job_id))
+        job_id = json.loads(r.text)['id']
+        print ("Job submitted successfully. Id is: '{}'".format(job_id))
+    except requests.HTTPError as e:
+        print("retry time :",num_retries)
+        if num_retries > 0:
+            return pdb_to_hssp(PDB_id, rest_url, num_retries - 1)
+    except:
+        return
+
 
     # Loop until the job running on the server has finished, either successfully
     # or due to an error.
@@ -42,11 +50,18 @@ def pdb_to_hssp(PDB_id, rest_url):
         # status is returned.
         url_status = '{}api/status/pdb_file/hssp_hssp/{}/'.format(rest_url,
                                                                   job_id)
-        r = requests.get(url_status)
-        r.raise_for_status()
+        try:
+            r = requests.get(url_status)
+            r.raise_for_status()
 
-        status = json.loads(r.text)['status']
-        print ("Job status is: '{}'".format(status))
+            status = json.loads(r.text)['status']
+            print ("Job status is: '{}'".format(status))
+        except requests.HTTPError as e:
+            print("retry time :", num_retries)
+            if num_retries > 0:
+                return pdb_to_hssp(PDB_id, rest_url, num_retries - 1)
+        except:
+            return
 
         # If the status equals SUCCESS, exit out of the loop by changing the
         # condition ready. This causes the code to drop into the `else` block
@@ -69,9 +84,16 @@ def pdb_to_hssp(PDB_id, rest_url):
         # is returned.
         url_result = '{}api/result/pdb_file/hssp_hssp/{}/'.format(rest_url,
                                                                   job_id)
-        r = requests.get(url_result)
-        r.raise_for_status()
-        result = json.loads(r.text)['result']
+        try:
+            r = requests.get(url_result)
+            r.raise_for_status()
+            result = json.loads(r.text)['result']
+        except requests.HTTPError as e:
+            print("retry time :", num_retries)
+            if num_retries > 0:
+                return pdb_to_hssp(PDB_id, rest_url, num_retries - 1)
+        except:
+            return
 
         # Return the result to the caller, which prints it to the screen.
         return result
@@ -128,7 +150,7 @@ if __name__ == "__main__":
         count += 1
     # print(count)
     # print(line[0])
-    for i in range(count):
+    for i in range(5727, count):#4V4M 第5436个，NO FOUND
         PDB_id = line[i]
         print('READING:',PDB_id, '   ', i,'/6626')
         result = pdb_to_hssp(PDB_id, rest_url)
