@@ -65,9 +65,12 @@ def get_PDB_id_fasta(filename):
 def select_PDBid():
     conn = sql.connect('protein_database.db')
     c = conn.cursor()
-    cursor = c.execute('SELECT * FROM PDB_id')
+    cursor = c.execute("SELECT * FROM PDB_DSSP WHERE PDB_id= '%s' " % '3A0Y')
+    count = 0
     for row in cursor:
         print(row)
+        count += 1
+    print(count)
     conn.commit()
     conn.close()
 
@@ -84,6 +87,6 @@ def delete_PDBid():
 
 # create_protein_database()
 # get_PDB_id_fasta(FILENAME)
-# select_PDBid()
+select_PDBid()
 # delete_PDBid()
 # main()

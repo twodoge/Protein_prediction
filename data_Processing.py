@@ -16,7 +16,7 @@ VALID_SET = 5877
 “[33,35]：相对和绝对溶剂可及性，仅用于训练（绝对可达性定为15;相对可及性通过蛋白质中最大的可达性值归一化，阈值为0.15;原始溶剂可及性由DSSP计算）”
 “[35,57]：sequence profile。注意氨基酸残基的顺序是ACDEFGHIKLMNPQRSTVWXY，它与氨基酸残基”
 '''
-def get_cnn_data(file_name,train_set, test_set, valid_set):#读取数据
+def get_cb513_data(file_name,train_set, test_set, valid_set):#读取数据
     print('reading data from'+file_name+'...')
     input_datas = np.load(file_name)
 
@@ -94,6 +94,25 @@ def get_cnn_data(file_name,train_set, test_set, valid_set):#读取数据
 
 
     return x_train, y_train, x_test, y_test, x_valid, y_valid
+
+def get_dssp_data():#读取数据
+    print('reading data from cullpdb_chains6626_x_train_aminoacid.npy and  cullpdb_chains6626_y_trrain.npy ...')
+    x_train_data = np.load('cullpdb_chains6626_x_train_aminoacid.npy')#(3185724, 7, 28)
+    y_train_data = np.load('cullpdb_chains6626_y_trrain.npy')#(3185724, 8)
+
+    np.set_printoptions(threshold=1000000)
+    # 个samples，每个sample有700个氨基酸
+    x_train_data.shape = (-1, 7, 28)
+    y_train_data.shape = (-1, 8)
+    # with open("C:\\bishe\data\dssp\data", 'a', encoding='gb18030') as f:
+    #     f.write(str(input_datas[0:2, 0:700, :]))
+
+    x_train = x_train_data[ : 2480000].astype(np.float32)#[0,5600）训练
+    y_train = y_train_data[ : 2480000].astype(np.float32)
+    x_test = x_train_data[2480000 : 3100000].astype(np.float32)#[5605,5877）=272
+    y_test = y_train_data[2480000 : 3100000].astype(np.float32)#[5877,6133]验证 = 256
+
+    return x_train, y_train, x_test, y_test
 
 # get_data(FILE_NAME, TRAIN_SET, TEST_SET, VALID_SET)
 # get_cnn_data(FILE_NAME, TRAIN_SET, TEST_SET, VALID_SET)

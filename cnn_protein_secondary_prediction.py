@@ -195,6 +195,17 @@ def acc_8(y_true, y_pred):
     print("total:", total, "correct:", correct)
     return correct/total
 
+def acc_dssp(y_true, y_pred):
+    correct = 0
+    count = np.size(y_true, axis=0)
+    total = count
+    for i in range(count):
+        if y_true[i, np.argmax(y_pred[i, :])] == 1:
+            correct += 1
+
+    print("total:", total, "correct:", correct)
+    return correct/total
+
 def cnn_1d():
     from keras.models import Sequential
     from keras.layers import Dense, Dropout
@@ -230,7 +241,7 @@ def cnn_1d():
     print("acc_8:", acc_8(y_valid, prediction))
 
 def cnn2d():
-    x_train, y_train, x_test, y_test, x_valid, y_valid = data_Processing.get_cnn_data(FILE_NAME, TRAIN_SET, TEST_SET, VALID_SET)
+    x_train, y_train, x_test, y_test, x_valid, y_valid = data_Processing.get_cb513_data(FILE_NAME, TRAIN_SET, TEST_SET, VALID_SET)
     x_train = x_train.reshape(-1, 17, 43, 1)
     # y_train = y_train.reshape(-1, 8)
     x_test = x_test.reshape(-1, 17, 43, 1)
@@ -290,5 +301,66 @@ def cnn2d():
     from keras.utils import plot_model
     plot_model(model, to_file='cnn2d_model.png', show_shapes=True)
 
+def cnn2d_dssp():
+    x_train, y_train, x_test, y_test = data_Processing.get_dssp_data()
+    x_train = x_train.reshape(-1, 7, 28, 1)
+    # y_train = y_train.reshape(-1, 8)
+    x_test = x_test.reshape(-1, 7, 28, 1)
+    # y_test = y_test.reshape(-1, 8)
+    # x_valid =x_valid.reshape(-1, 17, 43, 1)
+    # y_valid = y_valid.reshape(-1, 8)
+
+    model = Sequential()
+    # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
+    # this applies 32 convolution filters of size 3x3 each.
+    model.add(Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(7, 28, 1)))
+    model.add(Conv2D(32, (3, 3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(8, activation='softmax'))
+
+    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer='rmsprop',
+                  metrics=['acc'])
+
+    #当验证集的loss不再下降时，中断训练
+    from keras.callbacks import EarlyStopping
+    early_stoppping = EarlyStopping(monitor='val_loss', patience=2)
+
+    his = model.fit(x_train, y_train, batch_size=256, epochs=60, verbose=1,
+              validation_split=0.05,
+              callbacks = [early_stoppping],
+              shuffle = True,
+              )
+    print(his.history)
+    #在每个epoch后记录训练/测试的loss和正确率
+    # with open("history_loss_acc.txt", 'w', encoding='gb18030') as f:
+    #     f.write(history.history)
+
+    # score = model.evaluate(x_test, y_test, batch_size=128)
+    # print(score)
+    model.summary()
+
+    #保存模型
+    model.save_weights("cnn2d_dssp_weights_256.h5")
+    model.save("cnn2d_dssp_model_256.h5")
+
+    #评估自己的模型，即删除Noseq
+    prediction = model.predict(x_test, batch_size=64, verbose=1)
+    print("acc_8:",acc_dssp(y_test, prediction))
+
+    #画出模型结构图，并保存成图片
+    from keras.utils import plot_model
+    plot_model(model, to_file='cnn2d_model.png', show_shapes=True)
+
 if __name__ == "__main__":
-    cnn2d()
+    cnn2d_dssp()
