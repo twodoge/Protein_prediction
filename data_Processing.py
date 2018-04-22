@@ -97,8 +97,8 @@ def get_cb513_data(file_name,train_set, test_set, valid_set):#读取数据
 
 def get_dssp_data():#读取数据
     print('reading data from cullpdb_chains6626_x_train_aminoacid.npy and  cullpdb_chains6626_y_trrain.npy ...')
-    x_train_data = np.load('cullpdb_chains6626_x_train_aminoacid.npy')#(3185724, 7, 28)
-    y_train_data = np.load('cullpdb_chains6626_y_trrain.npy')#(3185724, 8)
+    x_train_data = np.load('C:\\bishe\data\\available\cullpdb_chains6626_x_train_aminoacid.npy')#(3185724, 7, 28)
+    y_train_data = np.load('C:\\bishe\data\\available\cullpdb_chains6626_y_trrain.npy')#(3185724, 8)
 
     np.set_printoptions(threshold=1000000)
     # 个samples，每个sample有700个氨基酸

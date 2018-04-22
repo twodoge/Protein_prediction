@@ -336,8 +336,8 @@ def cnn2d_dssp():
     from keras.callbacks import EarlyStopping
     early_stoppping = EarlyStopping(monitor='val_loss', patience=2)
 
-    his = model.fit(x_train, y_train, batch_size=256, epochs=60, verbose=1,
-              validation_split=0.05,
+    his = model.fit(x_train, y_train, batch_size=256, epochs=20, verbose=1,
+              validation_split=0.2,
               callbacks = [early_stoppping],
               shuffle = True,
               )
