@@ -14,15 +14,6 @@ def conv2d_fuctional():
 
     inputs = Input(shape = (7, 28, -1))
 
-    inputs_1 = Conv2D(64, (1, 1), padding = 'same', activation = 'relu')(inputs)
-    inputs_1 = Conv2D(64, (3, 3), padding = 'same', activation = 'relu')(inputs_1)
-
-    inputs_2 = Conv2D(32, (2, 2), padding = 'same', activation = 'relu')(inputs)
-    inputs_2 = Conv2D(32, (5, 5), padding = 'same', activation = 'relu')(inputs_2)
-
-    inputs_3 = MaxPooling2D((3, 3), strides = (1, 1), padding = 'same')(inputs)
-    inputs_3 = Conv2D(64, (1, 1), padding = 'same', activation = 'relu')(inputs_3)
-
     outputs = keras.layers.concatenate([inputs_1, inputs_2, inputs_3], axis = 1)
 
     outputs = Dense(64, activation = 'relu')(outputs)
