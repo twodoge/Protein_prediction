@@ -5,9 +5,7 @@ import os
 import xlrd 
 # import selfdata_processing
 import sqlite3 as sql
-import datetime
 
-datetime.date.today()
 aminoacid = {}
 conn = sql.connect('protein_database.db')
 c = conn.cursor()
@@ -63,7 +61,7 @@ def get_seq_onehot(seq):
 #标签的独热编码
 def get_label_onehot(seq):
     label = []
-    strs = 'HBEGITS '
+    strs = '    '
     # labels = []
     for i in range(len(strs)):
         if seq == strs[i]:

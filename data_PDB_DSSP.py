@@ -65,17 +65,17 @@ def get_PDB_id_fasta(filename):
 def select_PDBid():
     conn = sql.connect('protein_database.db')
     c = conn.cursor()
-    cursor = c.execute("SELECT * FROM PDB_DSSP WHERE PDB_id= '%s' " % '3A0Y')
+    cursor = c.execute("SELECT * FROM PDB_id")
     count = 0
     for row in cursor:
-        print(row)
+        # print(row[2])
         count += 1
     print(count)
     conn.commit()
     conn.close()
 
 def delete_PDBid():
-    seq = '4V4M'
+    seq = '2ZZJ'
     conn = sql.connect('protein_database.db')
     c = conn.cursor()
     cursor = c.execute("DELETE FROM PDB_DSSP WHERE PDB_id = '%s'"% seq)
@@ -85,6 +85,21 @@ def delete_PDBid():
     conn.commit()
     conn.close()
 
+def optimize_sql():
+    conn = sql.connect('protein_database.db')
+    c = conn.cursor()
+    count = 0
+    aminoacids = 'ACDEFGHIKLMNPQRSTVWY'
+    for i in aminoacids:
+        cursor = c.execute("SELECT * FROM PDB_DSSP WHERE amino_acid_seq = '%s'" % (i))
+        for i in cursor:
+            count += 1
+        # print ('i:',i)
+    print(count)
+    conn.commit()
+    conn.close()
+
+# optimize_sql()
 # create_protein_database()
 # get_PDB_id_fasta(FILENAME)
 select_PDBid()

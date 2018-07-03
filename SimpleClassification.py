@@ -1,48 +1,108 @@
-#!/usr/bin/env python
-# _*_ coding:utf-8 _*_
+#加载keras模块
+from __future__ import print_function
 import numpy as np
-import pandas as pd
+np.random.seed(1337)  # for reproducibility
+
+import keras
+from keras.datasets import mnist
 from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras.wrappers.scikit_learn import KerasClassifier
+from keras.layers.core import Dense, Dropout, Activation
+from keras.optimizers import SGD, Adam, RMSprop
 from keras.utils import np_utils
-from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
+%matplotlib inline
 
-# load dataset
-dataframe = pd.read_csv("iris.csv", header=None)
-dataset = dataframe.values
-X = dataset[:, 0:4].astype(float)
-Y = dataset[:, 4]
+#写一个LossHistory类，保存loss和acc
+class LossHistory(keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = {'batch':[], 'epoch':[]}
+        self.accuracy = {'batch':[], 'epoch':[]}
+        self.val_loss = {'batch':[], 'epoch':[]}
+        self.val_acc = {'batch':[], 'epoch':[]}
 
-# encode class values as integers
-encoder = LabelEncoder()
-encoded_Y = encoder.fit_transform(Y)
-# convert integers to dummy variables (one hot encoding)
-dummy_y = np_utils.to_categorical(encoded_Y)
+    def on_batch_end(self, batch, logs={}):
+        self.losses['batch'].append(logs.get('loss'))
+        self.accuracy['batch'].append(logs.get('acc'))
+        self.val_loss['batch'].append(logs.get('val_loss'))
+        self.val_acc['batch'].append(logs.get('val_acc'))
 
-# define model structure
-def baseline_model():
-    model = Sequential()
-    model.add(Dense(output_dim=10, input_dim=4, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(output_dim=3, input_dim=10, activation='softmax'))
-    # Compile model
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
-estimator = KerasClassifier(build_fn=baseline_model, nb_epoch=40, batch_size=256)
-# splitting data into training set and test set. If random_state is set to an integer, the split datasets are fixed.
-X_train, X_test, Y_train, Y_test = train_test_split(X, dummy_y, test_size=0.3, random_state=0)
-estimator.fit(X_train, Y_train)
+    def on_epoch_end(self, batch, logs={}):
+        self.losses['epoch'].append(logs.get('loss'))
+        self.accuracy['epoch'].append(logs.get('acc'))
+        self.val_loss['epoch'].append(logs.get('val_loss'))
+        self.val_acc['epoch'].append(logs.get('val_acc'))
 
-# make predictions
-pred = estimator.predict(X_test)
+    def loss_plot(self, loss_type):
+        iters = range(len(self.losses[loss_type]))
+        plt.figure()
+        # acc
+        plt.plot(iters, self.accuracy[loss_type], 'r', label='train acc')
+        # loss
+        plt.plot(iters, self.losses[loss_type], 'g', label='train loss')
+        if loss_type == 'epoch':
+            # val_acc
+            plt.plot(iters, self.val_acc[loss_type], 'b', label='val acc')
+            # val_loss
+            plt.plot(iters, self.val_loss[loss_type], 'k', label='val loss')
+        plt.grid(True)
+        plt.xlabel(loss_type)
+        plt.ylabel('acc-loss')
+        plt.legend(loc="upper right")
+        plt.show()
+#变量初始化
+batch_size = 128 
+nb_classes = 10
+nb_epoch = 20
 
-# inverse numeric variables to initial categorical labels
-init_lables = encoder.inverse_transform(pred)
+# the data, shuffled and split between train and test sets
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
 
-# k-fold cross-validate
-seed = 42
-np.random.seed(seed)
-kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
-results = cross_val_score(estimator, X, dummy_y, cv=kfold)
+X_train = X_train.reshape(60000, 784)
+X_test = X_test.reshape(10000, 784)
+X_train = X_train.astype('float32')
+X_test = X_test.astype('float32')
+X_train /= 255
+X_test /= 255
+print(X_train.shape[0], 'train samples')
+print(X_test.shape[0], 'test samples')
+
+# convert class vectors to binary class matrices
+Y_train = np_utils.to_categorical(y_train, nb_classes)
+Y_test = np_utils.to_categorical(y_test, nb_classes)
+
+#建立模型 使用Sequential（）
+model = Sequential()
+model.add(Dense(512, input_shape=(784,)))
+model.add(Activation('relu'))
+model.add(Dropout(0.2))
+model.add(Dense(512))
+model.add(Activation('relu'))
+model.add(Dropout(0.2))
+model.add(Dense(10))
+model.add(Activation('softmax'))
+
+#打印模型
+model.summary()
+
+#训练与评估
+#编译模型
+model.compile(loss='categorical_crossentropy',
+              optimizer=RMSprop(),
+              metrics=['accuracy'])
+#创建一个实例history
+history = LossHistory()
+
+#迭代训练（注意这个地方要加入callbacks）
+model.fit(X_train, Y_train,
+            batch_size=batch_size, nb_epoch=nb_epoch,
+            verbose=1, 
+            validation_data=(X_test, Y_test),
+            callbacks=[history])
+
+#模型评估
+score = model.evaluate(X_test, Y_test, verbose=0)
+print('Test score:', score[0])
+print('Test accuracy:', score[1])
+
+#绘制acc-loss曲线
+history.loss_plot('epoch')
